@@ -1,0 +1,33 @@
+version: 1
+policy: "Utiliser ces jointures uniquement lorsque la vue RF_BIZ choisie ne contient pas déjà la dimension."
+joins:
+  - left: RF_CORE.fact_risk_monthly.entity_id
+    right: RF_CORE.dim_entity.entity_id
+    cardinality: many_to_one
+  - left: RF_CORE.fact_risk_monthly.product_code
+    right: RF_CORE.dim_product.product_code
+    cardinality: many_to_one
+  - left: RF_CORE.fact_finance_monthly.entity_id
+    right: RF_CORE.dim_entity.entity_id
+    cardinality: many_to_one
+  - left: RF_CORE.fact_finance_monthly.product_code
+    right: RF_CORE.dim_product.product_code
+    cardinality: many_to_one
+  - left: RF_CORE.fact_finance_monthly.account_code
+    right: RF_CORE.dim_account.account_code
+    cardinality: many_to_one
+  - left: RF_CORE.fact_exposure_snapshot.client_id
+    right: RF_CORE.dim_client.client_id
+    cardinality: many_to_one
+  - left: RF_CORE.fact_exposure_snapshot.entity_id
+    right: RF_CORE.dim_entity.entity_id
+    cardinality: many_to_one
+  - left: RF_CORE.fact_exposure_snapshot.product_code
+    right: RF_CORE.dim_product.product_code
+    cardinality: many_to_one
+  - left: RF_CORE.dim_entity.country_code
+    right: RF_CORE.dim_country.country_code
+    cardinality: many_to_one
+  - left: RF_CORE.dim_client.sector_code
+    right: RF_CORE.dim_sector.sector_code
+    cardinality: many_to_one

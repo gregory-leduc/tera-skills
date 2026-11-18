@@ -1,0 +1,35 @@
+version: 1
+paths:
+  ecl:
+    target: RF_BIZ.vw_risk_metrics.ecl_eur
+    steps:
+      - RF_STG.stg_ecl_input.[pd,lgd,ead_eur,scenario_weight,model_version,batch_id]
+      - RF_STG.stg_exposure.[facility_id,month_end,entity_id,product_code]
+      - RF_WRK.wrk_ecl_calc.[facility_id,month_end,ecl_eur,model_version]
+      - RF_CORE.fact_risk_monthly.[month_end,entity_id,product_code,ecl_eur,source_batch_id]
+      - RF_BIZ.vw_risk_metrics.ecl_eur
+    formula: "SUM(pd * lgd * ead_eur * scenario_weight)"
+  finance:
+    target: RF_BIZ.vw_finance_metrics.amount_eur
+    steps:
+      - RF_STG.stg_gl_entry.[local_amount,currency_code,fx_to_eur,account_code,batch_id]
+      - RF_STG.stg_account.[account_code,pnl_sign,account_family]
+      - RF_WRK.wrk_gl_normalized.amount_eur
+      - RF_CORE.fact_finance_monthly.amount_eur
+      - RF_BIZ.vw_finance_metrics.amount_eur
+    formula: "local_amount * fx_to_eur * pnl_sign"
+  allocation:
+    target: RF_BIZ.vw_allocation_details.allocated_amount_eur
+    steps:
+      - RF_STG.stg_allocation_driver.[pool_amount_eur,driver_value,driver_total,batch_id]
+      - RF_WRK.wrk_cost_allocation.[allocation_rate,allocated_amount_eur]
+      - RF_CORE.fact_cost_allocation.allocated_amount_eur
+      - RF_BIZ.vw_allocation_details.allocated_amount_eur
+    formula: "pool_amount_eur * driver_value / NULLIFZERO(driver_total)"
+  exposure:
+    target: RF_BIZ.vw_exposure_metrics.ead_eur
+    steps:
+      - RF_STG.stg_exposure.[facility_id,ead_eur,batch_id]
+      - RF_CORE.fact_exposure_snapshot.[facility_id,ead_eur,source_batch_id]
+      - RF_BIZ.vw_exposure_metrics.ead_eur
+    formula: "SUM(ead_eur) at the requested grain"

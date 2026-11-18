@@ -1,0 +1,97 @@
+version: 1
+currency: EUR
+metrics:
+  cost_of_risk_amount:
+    labels: ["coût du risque", "cost of risk", "cor", "charge de risque"]
+    definition: "Charge de dépréciation/ECL agrégée sur la période."
+    source_view: RF_BIZ.vw_risk_metrics
+    expression: "SUM(cost_of_risk_eur)"
+    unit: EUR
+    default_time_window: trailing_12_completed_months
+    additive: true
+    allowed_dimensions: [month_end, quarter_end, year_num, country_code, country_name, entity_code, entity_name, product_code, product_name]
+  cost_of_risk_bps:
+    labels: ["coût du risque en points de base", "cost of risk bps", "cor bps"]
+    definition: "Charge de risque annualisée ou sur la fenêtre demandée rapportée à l'EAD moyenne."
+    source_view: RF_BIZ.vw_risk_metrics
+    expression: "10000 * SUM(cost_of_risk_eur) / NULLIFZERO(AVG(ead_eur))"
+    unit: bps
+    default_time_window: trailing_12_completed_months
+    additive: false
+    allowed_dimensions: [month_end, quarter_end, year_num, country_code, country_name, entity_code, entity_name, product_code, product_name]
+  ecl:
+    labels: ["ecl", "expected credit loss", "pertes de crédit attendues"]
+    definition: "ECL pondérée par scénario."
+    source_view: RF_BIZ.vw_risk_metrics
+    expression: "SUM(ecl_eur)"
+    detail_expression: "SUM(CAST(pd AS FLOAT) * CAST(lgd AS FLOAT) * CAST(ead_eur AS FLOAT) * CAST(scenario_weight AS FLOAT))"
+    unit: EUR
+    default_time_window: latest_closed_month
+    additive: true
+    allowed_dimensions: [month_end, country_code, country_name, entity_code, entity_name, product_code, product_name]
+  ead:
+    labels: ["ead", "exposure at default", "exposition au défaut"]
+    definition: "Exposition au défaut à la date d'arrêté."
+    source_view: RF_BIZ.vw_exposure_metrics
+    expression: "SUM(ead_eur)"
+    unit: EUR
+    default_time_window: latest_closed_month
+    additive: true
+    allowed_dimensions: [month_end, country_code, country_name, entity_code, entity_name, product_code, product_name, sector_code, sector_name, client_id, client_name]
+  rwa:
+    labels: ["rwa", "risk weighted assets", "actifs pondérés"]
+    definition: "Actifs pondérés par les risques à la date d'arrêté."
+    source_view: RF_BIZ.vw_exposure_metrics
+    expression: "SUM(rwa_eur)"
+    unit: EUR
+    default_time_window: latest_closed_month
+    additive: true
+    allowed_dimensions: [month_end, country_code, country_name, entity_code, entity_name, product_code, product_name, sector_code, sector_name]
+  net_banking_income:
+    labels: ["produit net bancaire", "pnb", "net banking income", "revenus"]
+    definition: "Revenus nets bancaires après normalisation comptable."
+    source_view: RF_BIZ.vw_finance_metrics
+    expression: "SUM(CASE WHEN account_family = 'REVENUE' THEN amount_eur ELSE 0 END)"
+    unit: EUR
+    default_time_window: current_year_to_latest_closed_month
+    additive: true
+    allowed_dimensions: [month_end, quarter_end, year_num, country_code, country_name, entity_code, entity_name, product_code, product_name]
+  operating_expense:
+    labels: ["charges d'exploitation", "opex", "operating expense", "frais de gestion"]
+    definition: "Charges d'exploitation en valeur absolue."
+    source_view: RF_BIZ.vw_finance_metrics
+    expression: "SUM(CASE WHEN account_family = 'OPERATING_EXPENSE' THEN ABS(amount_eur) ELSE 0 END)"
+    unit: EUR
+    default_time_window: current_year_to_latest_closed_month
+    additive: true
+    allowed_dimensions: [month_end, quarter_end, year_num, country_code, country_name, entity_code, entity_name, product_code, product_name, account_code, account_name]
+  efficiency_ratio:
+    labels: ["coefficient d'exploitation", "cost income ratio", "efficiency ratio"]
+    definition: "Charges d'exploitation divisées par le produit net bancaire."
+    source_view: RF_BIZ.vw_finance_metrics
+    expression: "100 * SUM(CASE WHEN account_family = 'OPERATING_EXPENSE' THEN ABS(amount_eur) ELSE 0 END) / NULLIFZERO(SUM(CASE WHEN account_family = 'REVENUE' THEN amount_eur ELSE 0 END))"
+    unit: percent
+    default_time_window: latest_closed_month
+    additive: false
+    allowed_dimensions: [month_end, quarter_end, year_num, country_code, country_name, entity_code, entity_name, product_code, product_name]
+  allocated_cost:
+    labels: ["charges allouées", "coûts alloués", "allocated cost", "allocation"]
+    definition: "Montant affecté depuis un pool de coûts selon un inducteur."
+    source_view: RF_BIZ.vw_allocation_details
+    expression: "SUM(allocated_amount_eur)"
+    unit: EUR
+    default_time_window: latest_closed_month
+    additive: true
+    allowed_dimensions: [month_end, allocation_step, cost_pool, sender_cc, country_code, entity_code, entity_name, product_code, product_name, driver_name]
+  top_n_concentration:
+    labels: ["concentration", "top clients", "concentration top n", "concentration client"]
+    definition: "EAD des N premiers clients divisée par l'EAD totale dans le périmètre."
+    source_view: RF_BIZ.vw_exposure_metrics
+    numerator_template: "SUM(CASE WHEN exposure_rank <= {n} THEN client_ead_eur ELSE 0 END)"
+    denominator: "SUM(client_ead_eur)"
+    expression_template: "100 * {numerator} / NULLIFZERO({denominator})"
+    unit: percent
+    default_n: 20
+    default_time_window: latest_closed_month
+    additive: false
+    allowed_dimensions: [month_end, country_code, country_name, sector_code, sector_name]

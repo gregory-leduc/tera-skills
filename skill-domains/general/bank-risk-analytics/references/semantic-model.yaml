@@ -1,0 +1,41 @@
+version: 1
+surfaces:
+  RF_BIZ.vw_risk_metrics:
+    purpose: "Mesures mensuelles de risque au niveau filiale et produit."
+    grain: [month_end, entity_id, product_code]
+    dimensions: [month_end, quarter_end, year_num, entity_id, entity_code, entity_name, country_code, country_name, product_code, product_name]
+    measures: [ecl_eur, cost_of_risk_eur, ead_eur]
+  RF_BIZ.vw_finance_metrics:
+    purpose: "Mesures mensuelles de comptabilité analytique."
+    grain: [month_end, entity_id, product_code, account_code]
+    dimensions: [month_end, quarter_end, year_num, entity_id, entity_code, entity_name, country_code, country_name, product_code, product_name, account_code, account_name, account_family]
+    measures: [amount_eur]
+  RF_BIZ.vw_exposure_metrics:
+    purpose: "Expositions mensuelles détaillées par client, filiale, produit et secteur."
+    grain: [month_end, facility_id]
+    dimensions: [month_end, facility_id, client_id, client_name, entity_id, entity_code, entity_name, country_code, country_name, product_code, product_name, sector_code, sector_name, rating_grade]
+    measures: [outstanding_eur, ead_eur, collateral_eur, rwa_eur]
+  RF_BIZ.vw_allocation_details:
+    purpose: "Détail de la cascade mensuelle d'allocation des coûts."
+    grain: [month_end, allocation_step, cost_pool, sender_cc, receiver_entity_id, receiver_product_code]
+    dimensions: [month_end, allocation_step, cost_pool, sender_cc, receiver_entity_id, entity_code, entity_name, country_code, receiver_product_code, product_name, driver_name]
+    measures: [driver_value, driver_total, allocation_rate, pool_amount_eur, allocated_amount_eur]
+  RF_BIZ.vw_ecl_details:
+    purpose: "Détail ECL par facilité et scénario pour explication et réconciliation."
+    grain: [month_end, facility_id, scenario_code]
+    dimensions: [month_end, facility_id, scenario_code, ifrs9_stage, entity_id, entity_code, entity_name, country_code, product_code, product_name, model_version, source_batch_id]
+    measures: [pd, lgd, ead_eur, scenario_weight, weighted_ecl_eur]
+  RF_BIZ.vw_lineage_catalog:
+    purpose: "Catalogue des actifs et arêtes de lineage."
+    grain: [edge_id]
+    dimensions: [source_asset, source_column, target_asset, target_column, transformation_type, transformation_sql, control_description]
+    measures: []
+core_fallbacks:
+  RF_CORE.fact_risk_monthly:
+    grain: [month_end, entity_id, product_code]
+  RF_CORE.fact_finance_monthly:
+    grain: [month_end, entity_id, product_code, account_code]
+  RF_CORE.fact_exposure_snapshot:
+    grain: [month_end, facility_id]
+  RF_CORE.fact_cost_allocation:
+    grain: [month_end, allocation_step, cost_pool, sender_cc, receiver_entity_id, receiver_product_code]

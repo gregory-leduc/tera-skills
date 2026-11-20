@@ -55,6 +55,11 @@ Résoudre les synonymes avec `metrics.yaml`. Ne pas exécuter de SQL tant que la
 4. Sélectionner la surface la plus détaillée requise, mais pas plus détaillée.
 5. Ne faire une jointure que si elle est déclarée dans `joins.yaml`.
 
+Si les bases de données `RF_BIZ`,`RF_CORE`, `RF_WRK` et `RF_STG` n'existent pas, utilise la base de données `ADLDSD_OFS_NEO`, ou demande à l'utilisateur de spécifier le nom d'une base de données. Bien qu'une seule base n'est utilisée, les objets possèdent un préfixe qui identifient leur type :
+1. Les vues dans RF_BIZ ont le préfixe `vw_`.
+2. Les tables dans `RF_CORE` ont le préfixe `dim_` pour les dimensions, et `fact_` pour les tables de faits.
+3. Les tables dans `RF_WRK` ont le préfixe `wrk_`, et les tables dans `RF_STG` ont le préfixe `stg_`
+
 ## 4. Composer le SQL dynamiquement
 
 Construire les clauses à partir du plan analytique :
